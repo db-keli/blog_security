@@ -16,11 +16,11 @@ public final class UserMapper {
     public static void updateEntity(User user, UpdateUserRequest request) {
         user.setUsername(request.username());
         user.setEmail(request.email());
-        user.setFullName(request.fullName());
+        user.setDisplayName(request.fullName());
     }
 
     public static UserDto toDto(User user) {
-        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getFullName(),
+        return new UserDto(user.getId(), user.getUsername(), user.getEmail(), user.getDisplayName(),
                 user.getCreatedAt(), user.getUpdatedAt());
     }
 }
