@@ -1,13 +1,13 @@
 package org.example.blog_spring.validation;
 
+import java.lang.annotation.Documented;
 import static java.lang.annotation.ElementType.FIELD;
+import java.lang.annotation.Retention;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Target;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 
 @Target({FIELD})
 @Retention(RUNTIME)
