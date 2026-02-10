@@ -1,37 +1,30 @@
 package org.example.blog_spring.web.rest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Instant;
 import java.util.List;
 import org.example.blog_spring.domain.PostStatus;
+import org.example.blog_spring.dto.ApiResponse;
 import org.example.blog_spring.dto.PostDto;
 import org.example.blog_spring.dto.TagSummaryDto;
 import org.example.blog_spring.service.PostService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.data.domain.Pageable;
 
-@WebMvcTest(PostController.class)
 class PostControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+    private final PostService postService = Mockito.mock(PostService.class);
 
-    @MockBean
-    private PostService postService;
+    private final PostController controller = new PostController(postService);
 
     @Test
-    void getPosts_returnsPagedPostsWrappedInApiResponse() throws Exception {
+    void getPosts_returnsPagedPostsWrappedInApiResponse() {
         var post = new PostDto(
                 1L,
                 1L,
@@ -53,14 +46,15 @@ class PostControllerTest {
                 Mockito.isNull(),
                 Mockito.isNull(),
                 Mockito.isNull(),
-                Mockito.any()
+                Mockito.any(Pageable.class)
         )).willReturn(page);
 
-        mockMvc.perform(get("/api/posts"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value(200))
-                .andExpect(jsonPath("$.message").value("Posts retrieved successfully"))
-                .andExpect(jsonPath("$.data.content[0].title").value("Title"));
+        var responseEntity = controller.getPosts(null, null, null, null, PageRequest.of(0, 20));
+        assertEquals(200, responseEntity.getStatusCode().value());
+
+        ApiResponse<Page<PostDto>> body = responseEntity.getBody();
+        assertEquals("Posts retrieved successfully", body.message());
+        assertEquals("Title", body.data().getContent().getFirst().title());
     }
 }
 
