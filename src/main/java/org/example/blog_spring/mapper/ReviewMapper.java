@@ -1,8 +1,6 @@
 package org.example.blog_spring.mapper;
 
-import org.example.blog_spring.domain.Post;
 import org.example.blog_spring.domain.Review;
-import org.example.blog_spring.domain.User;
 import org.example.blog_spring.dto.CreateReviewRequest;
 import org.example.blog_spring.dto.ReviewDto;
 import org.example.blog_spring.dto.UpdateReviewRequest;
@@ -11,8 +9,8 @@ public final class ReviewMapper {
 
     private ReviewMapper() {}
 
-    public static Review toEntity(CreateReviewRequest request, Post post, User user) {
-        var review = new Review(post, user, request.rating());
+    public static Review toEntity(CreateReviewRequest request) {
+        var review = new Review(request.postId(), request.userId(), request.rating());
         review.setTitle(request.title());
         review.setContent(request.content());
         if (request.verified() != null) {
@@ -22,17 +20,18 @@ public final class ReviewMapper {
     }
 
     public static void updateEntity(Review review, UpdateReviewRequest request) {
+        review.setRating(request.rating());
         review.setTitle(request.title());
         review.setContent(request.content());
         if (request.verified() != null) {
             review.setVerified(request.verified());
         }
+        review.setUpdatedAt(java.time.Instant.now());
     }
 
     public static ReviewDto toDto(Review review) {
-        return new ReviewDto(review.getId(), review.getPost().getId(), review.getUser().getId(),
+        return new ReviewDto(review.getId(), review.getPostId(), review.getUserId(),
                 review.getRating(), review.getTitle(), review.getContent(), review.isVerified(),
                 review.getCreatedAt(), review.getUpdatedAt());
     }
 }
-
