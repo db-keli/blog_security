@@ -10,4 +10,3 @@ public class PostNotFoundException extends RuntimeException {
         super("Post with slug '%s' not found".formatted(slug));
     }
 }
-
