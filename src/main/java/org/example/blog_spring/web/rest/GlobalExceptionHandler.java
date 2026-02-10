@@ -4,7 +4,11 @@ import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
 import org.example.blog_spring.dto.ApiResponse;
+import org.example.blog_spring.exception.CommentNotFoundException;
 import org.example.blog_spring.exception.EmailAlreadyUsedException;
+import org.example.blog_spring.exception.PostNotFoundException;
+import org.example.blog_spring.exception.ReviewNotFoundException;
+import org.example.blog_spring.exception.TagNotFoundException;
 import org.example.blog_spring.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +21,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
+        var response = ApiResponse.<Void>error(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler({
+            PostNotFoundException.class,
+            TagNotFoundException.class,
+            CommentNotFoundException.class,
+            ReviewNotFoundException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(RuntimeException ex) {
         var response = ApiResponse.<Void>error(HttpStatus.NOT_FOUND, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }

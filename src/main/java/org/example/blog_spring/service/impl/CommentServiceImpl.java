@@ -4,6 +4,9 @@ import org.example.blog_spring.domain.Comment;
 import org.example.blog_spring.dto.CommentDto;
 import org.example.blog_spring.dto.CreateCommentRequest;
 import org.example.blog_spring.dto.UpdateCommentRequest;
+import org.example.blog_spring.exception.CommentNotFoundException;
+import org.example.blog_spring.exception.PostNotFoundException;
+import org.example.blog_spring.exception.UserNotFoundException;
 import org.example.blog_spring.mapper.CommentMapper;
 import org.example.blog_spring.repository.CommentRepository;
 import org.example.blog_spring.repository.PostRepository;
@@ -32,17 +35,14 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto createComment(CreateCommentRequest request) {
         var post = postRepository.findById(request.postId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Post with id %d not found".formatted(request.postId())));
+                .orElseThrow(() -> new PostNotFoundException(request.postId()));
         var user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "User with id %d not found".formatted(request.userId())));
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
         Comment parent = null;
         if (request.parentId() != null) {
             parent = commentRepository.findById(request.parentId())
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "Parent comment with id %d not found".formatted(request.parentId())));
+                    .orElseThrow(() -> new CommentNotFoundException(request.parentId()));
         }
 
         var comment = CommentMapper.toEntity(request, post, user, parent);
@@ -53,8 +53,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public CommentDto getComment(Long id) {
-        var comment = commentRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Comment with id %d not found".formatted(id)));
+        var comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CommentNotFoundException(id));
         return CommentMapper.toDto(comment);
     }
 
@@ -72,8 +72,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto updateComment(Long id, UpdateCommentRequest request) {
-        var comment = commentRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Comment with id %d not found".formatted(id)));
+        var comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CommentNotFoundException(id));
 
         CommentMapper.updateEntity(comment, request);
         var saved = commentRepository.save(comment);
@@ -83,7 +83,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public void deleteComment(Long id) {
         if (!commentRepository.existsById(id)) {
-            throw new IllegalArgumentException("Comment with id %d not found".formatted(id));
+            throw new CommentNotFoundException(id);
         }
         commentRepository.deleteById(id);
     }

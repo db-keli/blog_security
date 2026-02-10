@@ -64,12 +64,14 @@ public class PostController {
     @GetMapping
     @Operation(summary = "List posts with pagination")
     public ResponseEntity<ApiResponse<Page<PostDto>>> getPosts(
-            @RequestParam(name = "publishedOnly", defaultValue = "false") boolean publishedOnly,
+            @RequestParam(name = "authorId", required = false) Long authorId,
+            @RequestParam(name = "tag", required = false) String tagSlug,
+            @RequestParam(name = "search", required = false) String search,
+            @RequestParam(name = "publishedOnly", required = false) Boolean publishedOnly,
             Pageable pageable
     ) {
-        Page<PostDto> posts =
-                publishedOnly ? postService.getPublishedPosts(pageable)
-                        : postService.getPosts(pageable);
+        Page<PostDto> posts = postService.getPosts(authorId, tagSlug, search, publishedOnly,
+                pageable);
         var response =
                 ApiResponse.success(HttpStatus.OK, "Posts retrieved successfully", posts);
         return ResponseEntity.ok(response);

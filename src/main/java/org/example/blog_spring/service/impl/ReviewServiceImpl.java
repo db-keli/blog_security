@@ -3,6 +3,9 @@ package org.example.blog_spring.service.impl;
 import org.example.blog_spring.dto.CreateReviewRequest;
 import org.example.blog_spring.dto.ReviewDto;
 import org.example.blog_spring.dto.UpdateReviewRequest;
+import org.example.blog_spring.exception.PostNotFoundException;
+import org.example.blog_spring.exception.ReviewNotFoundException;
+import org.example.blog_spring.exception.UserNotFoundException;
 import org.example.blog_spring.mapper.ReviewMapper;
 import org.example.blog_spring.repository.PostRepository;
 import org.example.blog_spring.repository.ReviewRepository;
@@ -31,11 +34,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDto createReview(CreateReviewRequest request) {
         var post = postRepository.findById(request.postId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Post with id %d not found".formatted(request.postId())));
+                .orElseThrow(() -> new PostNotFoundException(request.postId()));
         var user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "User with id %d not found".formatted(request.userId())));
+                .orElseThrow(() -> new UserNotFoundException(request.userId()));
 
         reviewRepository.findByPostIdAndUserId(request.postId(), request.userId())
                 .ifPresent(existing -> {
@@ -51,8 +52,8 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     @Transactional(readOnly = true)
     public ReviewDto getReview(Long id) {
-        var review = reviewRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Review with id %d not found".formatted(id)));
+        var review = reviewRepository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException(id));
         return ReviewMapper.toDto(review);
     }
 
@@ -60,8 +61,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Transactional(readOnly = true)
     public ReviewDto getReviewForUserAndPost(Long userId, Long postId) {
         var review = reviewRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Review for user %d and post %d not found".formatted(userId, postId)));
+                .orElseThrow(() -> new ReviewNotFoundException(userId, postId));
         return ReviewMapper.toDto(review);
     }
 
@@ -79,8 +79,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDto updateReview(Long id, UpdateReviewRequest request) {
-        var review = reviewRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Review with id %d not found".formatted(id)));
+        var review = reviewRepository.findById(id)
+                .orElseThrow(() -> new ReviewNotFoundException(id));
 
         ReviewMapper.updateEntity(review, request);
         var saved = reviewRepository.save(review);
@@ -90,7 +90,7 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void deleteReview(Long id) {
         if (!reviewRepository.existsById(id)) {
-            throw new IllegalArgumentException("Review with id %d not found".formatted(id));
+            throw new ReviewNotFoundException(id);
         }
         reviewRepository.deleteById(id);
     }

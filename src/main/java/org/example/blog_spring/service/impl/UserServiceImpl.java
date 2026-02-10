@@ -25,9 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(CreateUserRequest request) {
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyUsedException(request.email());
-        }
+        // Email uniqueness is enforced by @UniqueEmail validator.
         if (userRepository.existsByUsername(request.username())) {
             throw new IllegalArgumentException(
                     "Username '%s' is already in use".formatted(request.username()));

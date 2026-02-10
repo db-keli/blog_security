@@ -3,6 +3,7 @@ package org.example.blog_spring.service.impl;
 import java.util.Set;
 
 import org.example.blog_spring.domain.PostStatus;
+import org.example.blog_spring.exception.PostNotFoundException;
 import org.example.blog_spring.dto.CreatePostRequest;
 import org.example.blog_spring.dto.PostDto;
 import org.example.blog_spring.dto.UpdatePostRequest;
@@ -50,8 +51,7 @@ public class PostServiceImpl implements PostService {
         @Transactional(readOnly = true)
         public PostDto getPost(Long id) {
                 var post = postRepository.findById(id)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "Post with id %d not found".formatted(id)));
+                                .orElseThrow(() -> new PostNotFoundException(id));
                 return PostMapper.toDto(post);
         }
 
@@ -59,29 +59,24 @@ public class PostServiceImpl implements PostService {
         @Transactional(readOnly = true)
         public PostDto getPostBySlug(String slug) {
                 var post = postRepository.findBySlug(slug)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "Post with slug '%s' not found".formatted(slug)));
+                                .orElseThrow(() -> new PostNotFoundException(slug));
                 return PostMapper.toDto(post);
         }
 
         @Override
         @Transactional(readOnly = true)
-        public Page<PostDto> getPosts(Pageable pageable) {
-                return postRepository.findAll(pageable).map(PostMapper::toDto);
-        }
+        public Page<PostDto> getPosts(Long authorId, String tagSlug, String search,
+                        Boolean publishedOnly, Pageable pageable) {
+                PostStatus status = Boolean.TRUE.equals(publishedOnly) ? PostStatus.PUBLISHED : null;
 
-        @Override
-        @Transactional(readOnly = true)
-        public Page<PostDto> getPublishedPosts(Pageable pageable) {
-                return postRepository.findAllByStatus(PostStatus.PUBLISHED, pageable)
+                return postRepository.search(status, authorId, tagSlug, search, pageable)
                                 .map(PostMapper::toDto);
         }
 
         @Override
         public PostDto updatePost(Long id, UpdatePostRequest request) {
                 var post = postRepository.findById(id)
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                                "Post with id %d not found".formatted(id)));
+                                .orElseThrow(() -> new PostNotFoundException(id));
 
                 Set<Long> tagIds = request.tagIds() != null ? request.tagIds() : Set.of();
                 var tags = tagIds.isEmpty() ? Set.<org.example.blog_spring.domain.Tag>of()
@@ -95,8 +90,7 @@ public class PostServiceImpl implements PostService {
         @Override
         public void deletePost(Long id) {
                 if (!postRepository.existsById(id)) {
-                        throw new IllegalArgumentException(
-                                        "Post with id %d not found".formatted(id));
+                        throw new PostNotFoundException(id);
                 }
                 postRepository.deleteById(id);
         }

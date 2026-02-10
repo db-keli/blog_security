@@ -3,6 +3,7 @@ package org.example.blog_spring.service.impl;
 import org.example.blog_spring.dto.CreateTagRequest;
 import org.example.blog_spring.dto.TagDto;
 import org.example.blog_spring.dto.UpdateTagRequest;
+import org.example.blog_spring.exception.TagNotFoundException;
 import org.example.blog_spring.mapper.TagMapper;
 import org.example.blog_spring.repository.TagRepository;
 import org.example.blog_spring.service.TagService;
@@ -39,16 +40,15 @@ public class TagServiceImpl implements TagService {
     @Override
     @Transactional(readOnly = true)
     public TagDto getTag(Long id) {
-        var tag = tagRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Tag with id %d not found".formatted(id)));
+        var tag = tagRepository.findById(id).orElseThrow(() -> new TagNotFoundException(id));
         return TagMapper.toDto(tag);
     }
 
     @Override
     @Transactional(readOnly = true)
     public TagDto getTagBySlug(String slug) {
-        var tag = tagRepository.findBySlug(slug).orElseThrow(
-                () -> new IllegalArgumentException("Tag with slug '%s' not found".formatted(slug)));
+        var tag = tagRepository.findBySlug(slug)
+                .orElseThrow(() -> new TagNotFoundException(slug));
         return TagMapper.toDto(tag);
     }
 
@@ -60,8 +60,7 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public TagDto updateTag(Long id, UpdateTagRequest request) {
-        var tag = tagRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Tag with id %d not found".formatted(id)));
+        var tag = tagRepository.findById(id).orElseThrow(() -> new TagNotFoundException(id));
 
         TagMapper.updateEntity(tag, request);
         var saved = tagRepository.save(tag);
@@ -71,7 +70,7 @@ public class TagServiceImpl implements TagService {
     @Override
     public void deleteTag(Long id) {
         if (!tagRepository.existsById(id)) {
-            throw new IllegalArgumentException("Tag with id %d not found".formatted(id));
+            throw new TagNotFoundException(id);
         }
         tagRepository.deleteById(id);
     }
