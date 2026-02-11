@@ -1,0 +1,180 @@
+type Query {
+  # Users
+  users(page: Int = 0, size: Int = 20): [User!]!
+  user(id: ID!): User
+
+  # Posts
+  posts(
+    page: Int = 0,
+    size: Int = 20,
+    authorId: ID,
+    tag: String,
+    search: String,
+    publishedOnly: Boolean
+  ): [Post!]!
+  post(id: ID!): Post
+  postBySlug(slug: String!): Post
+
+  # Tags
+  tags(page: Int = 0, size: Int = 50): [Tag!]!
+  tagBySlug(slug: String!): Tag
+
+  # Comments
+  commentsByPost(postId: ID!, page: Int = 0, size: Int = 50): [Comment!]!
+
+  # Reviews
+  reviewsByPost(postId: ID!, page: Int = 0, size: Int = 50): [Review!]!
+}
+
+type Mutation {
+  # Users
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+
+  # Posts
+  createPost(input: CreatePostInput!): Post!
+  updatePost(id: ID!, input: UpdatePostInput!): Post!
+  deletePost(id: ID!): Boolean!
+
+  # Tags
+  createTag(input: CreateTagInput!): Tag!
+  updateTag(id: ID!, input: UpdateTagInput!): Tag!
+  deleteTag(id: ID!): Boolean!
+
+  # Comments
+  createComment(input: CreateCommentInput!): Comment!
+  updateComment(id: ID!, input: UpdateCommentInput!): Comment!
+  deleteComment(id: ID!): Boolean!
+
+  # Reviews
+  createReview(input: CreateReviewInput!): Review!
+  updateReview(id: ID!, input: UpdateReviewInput!): Review!
+  deleteReview(id: ID!): Boolean!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  fullName: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Post {
+  id: ID!
+  authorId: ID!
+  title: String!
+  content: String!
+  slug: String!
+  status: String!
+  createdAt: String!
+  updatedAt: String!
+  publishedAt: String
+  tags: [TagSummary!]!
+}
+
+type Tag {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  createdAt: String!
+}
+
+type TagSummary {
+  id: ID!
+  name: String!
+  slug: String!
+}
+
+type Comment {
+  id: ID!
+  postId: ID!
+  userId: ID!
+  parentId: ID
+  content: String!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Review {
+  id: ID!
+  postId: ID!
+  userId: ID!
+  rating: Int!
+  title: String
+  content: String
+  verified: Boolean!
+  createdAt: String!
+  updatedAt: String!
+}
+
+input CreateUserInput {
+  username: String!
+  email: String!
+  fullName: String!
+}
+
+input UpdateUserInput {
+  username: String!
+  email: String!
+  fullName: String!
+}
+
+input CreatePostInput {
+  authorId: ID!
+  title: String!
+  content: String!
+  slug: String!
+  tagIds: [ID!]
+}
+
+input UpdatePostInput {
+  title: String!
+  content: String!
+  slug: String!
+  status: String
+  tagIds: [ID!]
+}
+
+input CreateTagInput {
+  name: String!
+  slug: String!
+  description: String
+}
+
+input UpdateTagInput {
+  name: String!
+  slug: String!
+  description: String
+}
+
+input CreateCommentInput {
+  postId: ID!
+  userId: ID!
+  parentId: ID
+  content: String!
+}
+
+input UpdateCommentInput {
+  content: String!
+}
+
+input CreateReviewInput {
+  postId: ID!
+  userId: ID!
+  rating: Int!
+  title: String
+  content: String
+  verified: Boolean
+}
+
+input UpdateReviewInput {
+  rating: Int!
+  title: String
+  content: String
+  verified: Boolean
+}
+

@@ -14,9 +14,16 @@ public interface PostService {
 
     PostDto getPostBySlug(String slug);
 
-    Page<PostDto> getPosts(Pageable pageable);
-
-    Page<PostDto> getPublishedPosts(Pageable pageable);
+    /**
+     * List posts with optional filters for author, tag, search term, and published-only flag.
+     */
+    Page<PostDto> getPosts(
+            Long authorId,
+            String tagSlug,
+            String search,
+            Boolean publishedOnly,
+            Pageable pageable
+    );
 
     PostDto updatePost(Long id, UpdatePostRequest request);
 

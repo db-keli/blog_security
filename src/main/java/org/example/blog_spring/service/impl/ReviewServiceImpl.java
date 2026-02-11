@@ -1,12 +1,15 @@
 package org.example.blog_spring.service.impl;
 
+import org.example.blog_spring.dao.PostDao;
+import org.example.blog_spring.dao.ReviewDao;
+import org.example.blog_spring.dao.UserDao;
 import org.example.blog_spring.dto.CreateReviewRequest;
 import org.example.blog_spring.dto.ReviewDto;
 import org.example.blog_spring.dto.UpdateReviewRequest;
+import org.example.blog_spring.exception.PostNotFoundException;
+import org.example.blog_spring.exception.ReviewNotFoundException;
+import org.example.blog_spring.exception.UserNotFoundException;
 import org.example.blog_spring.mapper.ReviewMapper;
-import org.example.blog_spring.repository.PostRepository;
-import org.example.blog_spring.repository.ReviewRepository;
-import org.example.blog_spring.repository.UserRepository;
 import org.example.blog_spring.service.ReviewService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,82 +20,77 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ReviewServiceImpl implements ReviewService {
 
-    private final ReviewRepository reviewRepository;
-    private final PostRepository postRepository;
-    private final UserRepository userRepository;
+    private final ReviewDao reviewDao;
+    private final PostDao postDao;
+    private final UserDao userDao;
 
-    public ReviewServiceImpl(ReviewRepository reviewRepository, PostRepository postRepository,
-            UserRepository userRepository) {
-        this.reviewRepository = reviewRepository;
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
+    public ReviewServiceImpl(ReviewDao reviewDao, PostDao postDao, UserDao userDao) {
+        this.reviewDao = reviewDao;
+        this.postDao = postDao;
+        this.userDao = userDao;
     }
 
     @Override
     public ReviewDto createReview(CreateReviewRequest request) {
-        var post = postRepository.findById(request.postId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Post with id %d not found".formatted(request.postId())));
-        var user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "User with id %d not found".formatted(request.userId())));
+        if (!postDao.existsById(request.postId())) {
+            throw new PostNotFoundException(request.postId());
+        }
+        if (!userDao.existsById(request.userId())) {
+            throw new UserNotFoundException(request.userId());
+        }
 
-        reviewRepository.findByPostIdAndUserId(request.postId(), request.userId())
+        reviewDao.findByPostIdAndUserId(request.postId(), request.userId())
                 .ifPresent(existing -> {
                     throw new IllegalArgumentException("User %d has already reviewed post %d"
                             .formatted(request.userId(), request.postId()));
                 });
 
-        var review = ReviewMapper.toEntity(request, post, user);
-        var saved = reviewRepository.save(review);
+        var review = ReviewMapper.toEntity(request);
+        var saved = reviewDao.insert(review);
         return ReviewMapper.toDto(saved);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ReviewDto getReview(Long id) {
-        var review = reviewRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Review with id %d not found".formatted(id)));
+        var review = reviewDao.findById(id).orElseThrow(() -> new ReviewNotFoundException(id));
         return ReviewMapper.toDto(review);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ReviewDto getReviewForUserAndPost(Long userId, Long postId) {
-        var review = reviewRepository.findByPostIdAndUserId(postId, userId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Review for user %d and post %d not found".formatted(userId, postId)));
+        var review = reviewDao.findByPostIdAndUserId(postId, userId)
+                .orElseThrow(() -> new ReviewNotFoundException(userId, postId));
         return ReviewMapper.toDto(review);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<ReviewDto> getReviewsForPost(Long postId, Pageable pageable) {
-        return reviewRepository.findByPostId(postId, pageable).map(ReviewMapper::toDto);
+        return reviewDao.findByPostId(postId, pageable).map(ReviewMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<ReviewDto> getReviewsForUser(Long userId, Pageable pageable) {
-        return reviewRepository.findByUserId(userId, pageable).map(ReviewMapper::toDto);
+        return reviewDao.findByUserId(userId, pageable).map(ReviewMapper::toDto);
     }
 
     @Override
     public ReviewDto updateReview(Long id, UpdateReviewRequest request) {
-        var review = reviewRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Review with id %d not found".formatted(id)));
+        var review = reviewDao.findById(id).orElseThrow(() -> new ReviewNotFoundException(id));
 
         ReviewMapper.updateEntity(review, request);
-        var saved = reviewRepository.save(review);
-        return ReviewMapper.toDto(saved);
+        reviewDao.update(review);
+        return ReviewMapper.toDto(review);
     }
 
     @Override
     public void deleteReview(Long id) {
-        if (!reviewRepository.existsById(id)) {
-            throw new IllegalArgumentException("Review with id %d not found".formatted(id));
+        if (!reviewDao.existsById(id)) {
+            throw new ReviewNotFoundException(id);
         }
-        reviewRepository.deleteById(id);
+        reviewDao.deleteById(id);
     }
 }
-

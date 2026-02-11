@@ -17,6 +17,7 @@ public final class UserMapper {
         user.setUsername(request.username());
         user.setEmail(request.email());
         user.setDisplayName(request.fullName());
+        user.setUpdatedAt(java.time.Instant.now());
     }
 
     public static UserDto toDto(User user) {
@@ -24,4 +25,3 @@ public final class UserMapper {
                 user.getCreatedAt(), user.getUpdatedAt());
     }
 }
-

@@ -1,22 +1,30 @@
-package org.example.blog_spring.web.rest;
+package org.example.blog_spring.exception;
 
-import jakarta.validation.ConstraintViolationException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.example.blog_spring.dto.ApiResponse;
-import org.example.blog_spring.exception.EmailAlreadyUsedException;
-import org.example.blog_spring.exception.UserNotFoundException;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.validation.ConstraintViolationException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
+        var response = ApiResponse.<Void>error(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler({PostNotFoundException.class, TagNotFoundException.class,
+            CommentNotFoundException.class, ReviewNotFoundException.class})
+    public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(RuntimeException ex) {
         var response = ApiResponse.<Void>error(HttpStatus.NOT_FOUND, ex.getMessage(), null);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
@@ -57,12 +65,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidDataAccess(
+            InvalidDataAccessApiUsageException ex) {
+        var response = ApiResponse.<Void>error(HttpStatus.BAD_REQUEST,
+                "Invalid paging parameters: page * size is too large", null);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
-        var response =
-                ApiResponse.<Void>error(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "Unexpected error occurred", null);
+        var response = ApiResponse.<Void>error(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unexpected error occurred", null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
 }
 
