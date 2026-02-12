@@ -29,7 +29,9 @@ CREATE TABLE IF NOT EXISTS posts (
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    published_at TIMESTAMPTZ
+    published_at TIMESTAMPTZ,
+    comment_count BIGINT NOT NULL DEFAULT 0,
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author_id);
@@ -51,7 +53,8 @@ CREATE TABLE IF NOT EXISTS comments (
     parent_id BIGINT REFERENCES comments(id) ON DELETE CASCADE,
     content TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    version BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id);
@@ -68,6 +71,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    version BIGINT NOT NULL DEFAULT 0,
     UNIQUE (user_id, post_id)
 );
 
