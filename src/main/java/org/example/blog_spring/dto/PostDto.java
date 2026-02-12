@@ -14,6 +14,7 @@ public record PostDto(
         Instant createdAt,
         Instant updatedAt,
         Instant publishedAt,
+        long commentCount,
         Set<TagSummaryDto> tags
 ) {
 }

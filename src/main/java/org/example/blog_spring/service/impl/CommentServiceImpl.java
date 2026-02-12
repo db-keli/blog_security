@@ -33,9 +33,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto createComment(CreateCommentRequest request) {
-        if (!postRepository.existsById(request.postId())) {
-            throw new PostNotFoundException(request.postId());
-        }
+        var post = postRepository.findById(request.postId())
+                .orElseThrow(() -> new PostNotFoundException(request.postId()));
         if (!userRepository.existsById(request.userId())) {
             throw new UserNotFoundException(request.userId());
         }
@@ -45,6 +44,11 @@ public class CommentServiceImpl implements CommentService {
 
         var comment = CommentMapper.toEntity(request);
         var saved = commentRepository.save(comment);
+
+        var newCount = commentRepository.countByPostId(request.postId());
+        post.setCommentCount(newCount);
+        postRepository.save(post);
+
         return CommentMapper.toDto(saved);
     }
 
@@ -80,9 +84,17 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteComment(Long id) {
-        if (!commentRepository.existsById(id)) {
-            throw new CommentNotFoundException(id);
-        }
-        commentRepository.deleteById(id);
+        var comment = commentRepository.findById(id)
+                .orElseThrow(() -> new CommentNotFoundException(id));
+
+        var postId = comment.getPostId();
+
+        commentRepository.delete(comment);
+
+        var post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostNotFoundException(postId));
+        var newCount = commentRepository.countByPostId(postId);
+        post.setCommentCount(newCount);
+        postRepository.save(post);
     }
 }
