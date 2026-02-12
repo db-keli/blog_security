@@ -5,9 +5,6 @@ import static org.mockito.BDDMockito.given;
 
 import java.util.Optional;
 
-import org.example.blog_spring.dao.CommentDao;
-import org.example.blog_spring.dao.PostDao;
-import org.example.blog_spring.dao.UserDao;
 import org.example.blog_spring.domain.Comment;
 import org.example.blog_spring.dto.CreateCommentRequest;
 import org.example.blog_spring.exception.CommentNotFoundException;
@@ -24,22 +21,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CommentServiceImplTest {
 
     @Mock
-    private CommentDao commentDao;
+    private org.example.blog_spring.repository.CommentRepository commentRepository;
     @Mock
-    private PostDao postDao;
+    private org.example.blog_spring.repository.PostRepository postRepository;
     @Mock
-    private UserDao userDao;
+    private org.example.blog_spring.repository.UserRepository userRepository;
 
     private CommentServiceImpl commentService;
 
     @BeforeEach
     void setUp() {
-        commentService = new CommentServiceImpl(commentDao, postDao, userDao);
+        commentService = new CommentServiceImpl(commentRepository, postRepository, userRepository);
     }
 
     @Test
     void createComment_throws_whenPostNotFound() {
-        given(postDao.existsById(999L)).willReturn(false);
+        given(postRepository.existsById(999L)).willReturn(false);
         var request = new CreateCommentRequest(999L, 1L, null, "Content");
 
         assertThatThrownBy(() -> commentService.createComment(request))
@@ -48,8 +45,8 @@ class CommentServiceImplTest {
 
     @Test
     void createComment_throws_whenUserNotFound() {
-        given(postDao.existsById(1L)).willReturn(true);
-        given(userDao.existsById(999L)).willReturn(false);
+        given(postRepository.existsById(1L)).willReturn(true);
+        given(userRepository.existsById(999L)).willReturn(false);
         var request = new CreateCommentRequest(1L, 999L, null, "Content");
 
         assertThatThrownBy(() -> commentService.createComment(request))
@@ -58,7 +55,7 @@ class CommentServiceImplTest {
 
     @Test
     void getComment_throws_whenNotFound() {
-        given(commentDao.findById(999L)).willReturn(Optional.empty());
+        given(commentRepository.findById(999L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> commentService.getComment(999L))
                 .isInstanceOf(CommentNotFoundException.class);

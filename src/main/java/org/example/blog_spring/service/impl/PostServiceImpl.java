@@ -3,16 +3,17 @@ package org.example.blog_spring.service.impl;
 import java.util.Set;
 
 import org.example.blog_spring.cache.CacheManager;
-import org.example.blog_spring.dao.PostDao;
-import org.example.blog_spring.dao.TagDao;
-import org.example.blog_spring.dao.UserDao;
 import org.example.blog_spring.domain.Post;
 import org.example.blog_spring.domain.PostStatus;
+import org.example.blog_spring.domain.Tag;
 import org.example.blog_spring.dto.CreatePostRequest;
 import org.example.blog_spring.dto.PostDto;
 import org.example.blog_spring.dto.UpdatePostRequest;
 import org.example.blog_spring.exception.PostNotFoundException;
 import org.example.blog_spring.mapper.PostMapper;
+import org.example.blog_spring.repository.PostRepository;
+import org.example.blog_spring.repository.TagRepository;
+import org.example.blog_spring.repository.UserRepository;
 import org.example.blog_spring.service.PostService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -24,30 +25,32 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PostServiceImpl implements PostService {
 
-    private final PostDao postDao;
-    private final UserDao userDao;
-    private final TagDao tagDao;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final TagRepository tagRepository;
     private final CacheManager cacheManager;
 
-    public PostServiceImpl(PostDao postDao, UserDao userDao, TagDao tagDao, CacheManager cacheManager) {
-        this.postDao = postDao;
-        this.userDao = userDao;
-        this.tagDao = tagDao;
+    public PostServiceImpl(PostRepository postRepository, UserRepository userRepository,
+            TagRepository tagRepository, CacheManager cacheManager) {
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.tagRepository = tagRepository;
         this.cacheManager = cacheManager;
     }
 
     @Override
     public PostDto createPost(CreatePostRequest request) {
-        if (!userDao.existsById(request.authorId())) {
-            throw new IllegalArgumentException("Author with id %d not found".formatted(request.authorId()));
+        if (!userRepository.existsById(request.authorId())) {
+            throw new IllegalArgumentException(
+                    "Author with id %d not found".formatted(request.authorId()));
         }
         Set<Long> tagIds = request.tagIds() != null ? request.tagIds() : Set.of();
-        var tags = tagIds.isEmpty() ? Set.<org.example.blog_spring.domain.Tag>of()
-                : Set.copyOf(tagDao.findByIdIn(tagIds));
+        Set<Tag> tags = tagIds.isEmpty() ? Set.of()
+                : Set.copyOf(tagRepository.findByIdIn(tagIds));
 
         var post = PostMapper.toEntity(request, request.authorId(), tags);
-        var saved = postDao.insert(post, tagIds);
-        saved.setTags(tags);
+        post.setTags(tags);
+        var saved = postRepository.save(post);
         cacheManager.putPost(saved);
         cacheManager.invalidatePostListCache();
         return PostMapper.toDto(saved);
@@ -58,7 +61,7 @@ public class PostServiceImpl implements PostService {
     public PostDto getPost(Long id) {
         var post = cacheManager.getPost(id);
         if (post == null) {
-            post = postDao.findById(id).orElseThrow(() -> new PostNotFoundException(id));
+            post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id));
             cacheManager.putPost(post);
         }
         return PostMapper.toDto(post);
@@ -69,7 +72,8 @@ public class PostServiceImpl implements PostService {
     public PostDto getPostBySlug(String slug) {
         var post = cacheManager.getPostBySlug(slug);
         if (post == null) {
-            post = postDao.findBySlug(slug).orElseThrow(() -> new PostNotFoundException(slug));
+            post = postRepository.findBySlug(slug)
+                    .orElseThrow(() -> new PostNotFoundException(slug));
             cacheManager.putPost(post);
         }
         return PostMapper.toDto(post);
@@ -91,9 +95,9 @@ public class PostServiceImpl implements PostService {
 
         Page<Post> page;
         if (status == null && authorId == null && tagSlug == null && search == null) {
-            page = postDao.findAll(pageable);
+            page = postRepository.findAll(pageable);
         } else {
-            page = postDao.search(status, authorId, tagSlug, search, pageable);
+            page = postRepository.search(status, authorId, tagSlug, search, pageable);
         }
         cacheManager.putPostList(cacheKey,
                 new CacheManager.PageCacheEntry(page.getContent(), page.getTotalElements()));
@@ -102,26 +106,26 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDto updatePost(Long id, UpdatePostRequest request) {
-        var post = postDao.findById(id).orElseThrow(() -> new PostNotFoundException(id));
+        var post = postRepository.findById(id).orElseThrow(() -> new PostNotFoundException(id));
 
         Set<Long> tagIds = request.tagIds() != null ? request.tagIds() : Set.of();
-        var tags = tagIds.isEmpty() ? Set.<org.example.blog_spring.domain.Tag>of()
-                : Set.copyOf(tagDao.findByIdIn(tagIds));
+        Set<Tag> tags = tagIds.isEmpty() ? Set.of()
+                : Set.copyOf(tagRepository.findByIdIn(tagIds));
 
         PostMapper.updateEntity(post, request, tags);
-        postDao.update(post, tagIds);
         post.setTags(tags);
-        cacheManager.putPost(post);
+        var saved = postRepository.save(post);
+        cacheManager.putPost(saved);
         cacheManager.invalidatePostListCache();
-        return PostMapper.toDto(post);
+        return PostMapper.toDto(saved);
     }
 
     @Override
     public void deletePost(Long id) {
-        if (!postDao.existsById(id)) {
+        if (!postRepository.existsById(id)) {
             throw new PostNotFoundException(id);
         }
-        postDao.deleteById(id);
+        postRepository.deleteById(id);
         cacheManager.removePost(id);
     }
 }

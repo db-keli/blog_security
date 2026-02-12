@@ -5,9 +5,6 @@ import static org.mockito.BDDMockito.given;
 
 import java.util.Optional;
 
-import org.example.blog_spring.dao.PostDao;
-import org.example.blog_spring.dao.ReviewDao;
-import org.example.blog_spring.dao.UserDao;
 import org.example.blog_spring.dto.CreateReviewRequest;
 import org.example.blog_spring.exception.PostNotFoundException;
 import org.example.blog_spring.exception.ReviewNotFoundException;
@@ -23,22 +20,22 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ReviewServiceImplTest {
 
     @Mock
-    private ReviewDao reviewDao;
+    private org.example.blog_spring.repository.ReviewRepository reviewRepository;
     @Mock
-    private PostDao postDao;
+    private org.example.blog_spring.repository.PostRepository postRepository;
     @Mock
-    private UserDao userDao;
+    private org.example.blog_spring.repository.UserRepository userRepository;
 
     private ReviewServiceImpl reviewService;
 
     @BeforeEach
     void setUp() {
-        reviewService = new ReviewServiceImpl(reviewDao, postDao, userDao);
+        reviewService = new ReviewServiceImpl(reviewRepository, postRepository, userRepository);
     }
 
     @Test
     void createReview_throws_whenPostNotFound() {
-        given(postDao.existsById(999L)).willReturn(false);
+        given(postRepository.existsById(999L)).willReturn(false);
         var request = new CreateReviewRequest(999L, 1L, (short) 5, null, null, null);
 
         assertThatThrownBy(() -> reviewService.createReview(request))
@@ -47,8 +44,8 @@ class ReviewServiceImplTest {
 
     @Test
     void createReview_throws_whenUserNotFound() {
-        given(postDao.existsById(1L)).willReturn(true);
-        given(userDao.existsById(999L)).willReturn(false);
+        given(postRepository.existsById(1L)).willReturn(true);
+        given(userRepository.existsById(999L)).willReturn(false);
         var request = new CreateReviewRequest(1L, 999L, (short) 5, null, null, null);
 
         assertThatThrownBy(() -> reviewService.createReview(request))
@@ -57,7 +54,7 @@ class ReviewServiceImplTest {
 
     @Test
     void getReview_throws_whenNotFound() {
-        given(reviewDao.findById(999L)).willReturn(Optional.empty());
+        given(reviewRepository.findById(999L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> reviewService.getReview(999L))
                 .isInstanceOf(ReviewNotFoundException.class);

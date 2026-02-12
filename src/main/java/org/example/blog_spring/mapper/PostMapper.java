@@ -2,6 +2,7 @@ package org.example.blog_spring.mapper;
 
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.example.blog_spring.domain.Post;
 import org.example.blog_spring.domain.Tag;
 import org.example.blog_spring.dto.CreatePostRequest;
@@ -28,7 +29,8 @@ public final class PostMapper {
         }
         post.setTags(tags != null ? tags : Set.of());
         post.setUpdatedAt(java.time.Instant.now());
-        if (request.status() == org.example.blog_spring.domain.PostStatus.PUBLISHED && post.getPublishedAt() == null) {
+        if (request.status() == org.example.blog_spring.domain.PostStatus.PUBLISHED
+                && post.getPublishedAt() == null) {
             post.setPublishedAt(java.time.Instant.now());
         }
     }
@@ -38,8 +40,8 @@ public final class PostMapper {
                 : post.getTags().stream()
                         .map(tag -> new TagSummaryDto(tag.getId(), tag.getName(), tag.getSlug()))
                         .collect(Collectors.toUnmodifiableSet());
-        return new PostDto(post.getId(), post.getAuthorId(), post.getTitle(),
-                post.getContent(), post.getSlug(), post.getStatus(), post.getCreatedAt(),
-                post.getUpdatedAt(), post.getPublishedAt(), tagDtos);
+        return new PostDto(post.getId(), post.getAuthorId(), post.getTitle(), post.getContent(),
+                post.getSlug(), post.getStatus(), post.getCreatedAt(), post.getUpdatedAt(),
+                post.getPublishedAt(), tagDtos);
     }
 }

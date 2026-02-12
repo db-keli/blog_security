@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import java.util.Optional;
 
 import org.example.blog_spring.cache.CacheManager;
-import org.example.blog_spring.dao.TagDao;
 import org.example.blog_spring.domain.Tag;
 import org.example.blog_spring.dto.CreateTagRequest;
 import org.example.blog_spring.dto.UpdateTagRequest;
@@ -25,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TagServiceImplTest {
 
     @Mock
-    private TagDao tagDao;
+    private org.example.blog_spring.repository.TagRepository tagRepository;
     @Mock
     private CacheManager cacheManager;
 
@@ -33,7 +32,7 @@ class TagServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        tagService = new TagServiceImpl(tagDao, cacheManager);
+        tagService = new TagServiceImpl(tagRepository, cacheManager);
     }
 
     @Test
@@ -51,7 +50,7 @@ class TagServiceImplTest {
     void getTag_returnsFromDaoAndCaches_whenNotInCache() {
         var tag = Tag.builder().id(1L).name("Java").slug("java").build();
         given(cacheManager.getTag(1L)).willReturn(null);
-        given(tagDao.findById(1L)).willReturn(Optional.of(tag));
+        given(tagRepository.findById(1L)).willReturn(Optional.of(tag));
 
         var result = tagService.getTag(1L);
 
@@ -62,14 +61,14 @@ class TagServiceImplTest {
     @Test
     void getTag_throws_whenNotFound() {
         given(cacheManager.getTag(999L)).willReturn(null);
-        given(tagDao.findById(999L)).willReturn(Optional.empty());
+        given(tagRepository.findById(999L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> tagService.getTag(999L)).isInstanceOf(TagNotFoundException.class);
     }
 
     @Test
     void createTag_throws_whenNameExists() {
-        given(tagDao.existsByName("Java")).willReturn(true);
+        given(tagRepository.existsByName("Java")).willReturn(true);
         var request = new CreateTagRequest("Java", "java", null);
 
         assertThatThrownBy(() -> tagService.createTag(request))
@@ -78,8 +77,8 @@ class TagServiceImplTest {
 
     @Test
     void createTag_throws_whenSlugExists() {
-        given(tagDao.existsByName("New")).willReturn(false);
-        given(tagDao.existsBySlug("existing")).willReturn(true);
+        given(tagRepository.existsByName("New")).willReturn(false);
+        given(tagRepository.existsBySlug("existing")).willReturn(true);
         var request = new CreateTagRequest("New", "existing", null);
 
         assertThatThrownBy(() -> tagService.createTag(request))
@@ -88,9 +87,9 @@ class TagServiceImplTest {
 
     @Test
     void createTag_savesAndCaches() {
-        given(tagDao.existsByName("New")).willReturn(false);
-        given(tagDao.existsBySlug("new")).willReturn(false);
-        given(tagDao.insert(any(Tag.class))).willAnswer(inv -> {
+        given(tagRepository.existsByName("New")).willReturn(false);
+        given(tagRepository.existsBySlug("new")).willReturn(false);
+        given(tagRepository.save(any(Tag.class))).willAnswer(inv -> {
             Tag t = inv.getArgument(0);
             t.setId(1L);
             return t;
