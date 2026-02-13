@@ -12,9 +12,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.example.blog_spring.cache.CacheManager;
-import org.example.blog_spring.dao.PostDao;
-import org.example.blog_spring.dao.TagDao;
-import org.example.blog_spring.dao.UserDao;
 import org.example.blog_spring.domain.Post;
 import org.example.blog_spring.domain.Tag;
 import org.example.blog_spring.dto.CreatePostRequest;
@@ -30,11 +27,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class PostServiceImplTest {
 
     @Mock
-    private PostDao postDao;
+    private org.example.blog_spring.repository.PostRepository postRepository;
     @Mock
-    private UserDao userDao;
+    private org.example.blog_spring.repository.UserRepository userRepository;
     @Mock
-    private TagDao tagDao;
+    private org.example.blog_spring.repository.TagRepository tagRepository;
     @Mock
     private CacheManager cacheManager;
 
@@ -42,7 +39,8 @@ class PostServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        postService = new PostServiceImpl(postDao, userDao, tagDao, cacheManager);
+        postService = new PostServiceImpl(postRepository, userRepository, tagRepository,
+                cacheManager);
     }
 
     @Test
@@ -63,20 +61,20 @@ class PostServiceImplTest {
         var post = Post.builder().id(1L).authorId(1L).title("Test").slug("test").tags(Set.of())
                 .build();
         given(cacheManager.getPost(1L)).willReturn(null);
-        given(postDao.findById(1L)).willReturn(Optional.of(post));
+        given(postRepository.findById(1L)).willReturn(Optional.of(post));
 
         var result = postService.getPost(1L);
 
         assertThat(result).isNotNull();
         assertThat(result.title()).isEqualTo("Test");
-        verify(postDao).findById(1L);
+        verify(postRepository).findById(1L);
         verify(cacheManager).putPost(post);
     }
 
     @Test
     void getPost_throws_whenNotFound() {
         given(cacheManager.getPost(999L)).willReturn(null);
-        given(postDao.findById(999L)).willReturn(Optional.empty());
+        given(postRepository.findById(999L)).willReturn(Optional.empty());
 
         assertThatThrownBy(() -> postService.getPost(999L))
                 .isInstanceOf(PostNotFoundException.class);
@@ -84,7 +82,7 @@ class PostServiceImplTest {
 
     @Test
     void createPost_throws_whenAuthorNotFound() {
-        given(userDao.existsById(999L)).willReturn(false);
+        given(userRepository.existsById(999L)).willReturn(false);
         var request = new CreatePostRequest(999L, "Title", "Content", "slug", Set.of());
 
         assertThatThrownBy(() -> postService.createPost(request))
@@ -93,8 +91,8 @@ class PostServiceImplTest {
 
     @Test
     void createPost_savesAndCaches() {
-        given(userDao.existsById(1L)).willReturn(true);
-        given(postDao.insert(any(Post.class), eq(Set.of()))).willAnswer(inv -> {
+        given(userRepository.existsById(1L)).willReturn(true);
+        given(postRepository.save(any(Post.class))).willAnswer(inv -> {
             Post p = inv.getArgument(0);
             p.setId(1L);
             p.setTags(Set.of());
@@ -106,14 +104,14 @@ class PostServiceImplTest {
 
         assertThat(result).isNotNull();
         assertThat(result.title()).isEqualTo("Title");
-        verify(postDao).insert(any(Post.class), eq(Set.of()));
+        verify(postRepository).save(any(Post.class));
         verify(cacheManager).putPost(any(Post.class));
         verify(cacheManager).invalidatePostListCache();
     }
 
     @Test
     void deletePost_throws_whenNotFound() {
-        given(postDao.existsById(999L)).willReturn(false);
+        given(postRepository.existsById(999L)).willReturn(false);
 
         assertThatThrownBy(() -> postService.deletePost(999L))
                 .isInstanceOf(PostNotFoundException.class);
@@ -121,11 +119,11 @@ class PostServiceImplTest {
 
     @Test
     void deletePost_removesFromCache() {
-        given(postDao.existsById(1L)).willReturn(true);
+        given(postRepository.existsById(1L)).willReturn(true);
 
         postService.deletePost(1L);
 
-        verify(postDao).deleteById(1L);
+        verify(postRepository).deleteById(1L);
         verify(cacheManager).removePost(1L);
     }
 }

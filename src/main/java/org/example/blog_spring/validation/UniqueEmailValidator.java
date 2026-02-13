@@ -2,16 +2,16 @@ package org.example.blog_spring.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import org.example.blog_spring.dao.UserDao;
+import org.example.blog_spring.repository.UserRepository;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, String> {
 
-    private final UserDao userDao;
+    private final UserRepository userRepository;
 
-    public UniqueEmailValidator(UserDao userDao) {
-        this.userDao = userDao;
+    public UniqueEmailValidator(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -19,7 +19,7 @@ public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, St
         if (value == null || value.isBlank()) {
             return true;
         }
-        return !userDao.existsByEmail(value);
+        return !userRepository.existsByEmail(value);
     }
 }
 
