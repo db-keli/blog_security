@@ -8,6 +8,9 @@ import org.example.blog_spring.exception.UserNotFoundException;
 import org.example.blog_spring.mapper.UserMapper;
 import org.example.blog_spring.repository.UserRepository;
 import org.example.blog_spring.service.UserService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "users", allEntries = true)
+    })
     public UserDto createUser(CreateUserRequest request) {
         if (userRepository.existsByUsername(request.username())) {
             throw new IllegalArgumentException(
@@ -36,6 +42,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "users", key = "#id")
     public UserDto getUser(Long id) {
         var user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         return UserMapper.toDto(user);
@@ -43,11 +50,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = "userLists",
+            key = "T(java.util.Objects).hash(#pageable.pageNumber, #pageable.pageSize)")
     public Page<UserDto> getUsers(Pageable pageable) {
         return userRepository.findAll(pageable).map(UserMapper::toDto);
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "users", key = "#id"),
+            @CacheEvict(cacheNames = "userLists", allEntries = true)
+    })
     public UserDto updateUser(Long id, UpdateUserRequest request) {
         var user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
 
@@ -62,6 +75,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "users", key = "#id"),
+            @CacheEvict(cacheNames = "userLists", allEntries = true)
+    })
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(id);

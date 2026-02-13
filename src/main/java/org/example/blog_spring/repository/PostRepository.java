@@ -14,6 +14,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
   Optional<Post> findBySlug(String slug);
 
+  Page<Post> findByStatus(PostStatus status, Pageable pageable);
+
+  Page<Post> findByAuthorId(Long authorId, Pageable pageable);
+
+  @Query("""
+      SELECT DISTINCT p FROM Post p
+      JOIN p.tags t
+      WHERE t.slug = :tagSlug
+      """)
+  Page<Post> findByTagSlug(@Param("tagSlug") String tagSlug, Pageable pageable);
+
   @Query("""
       SELECT DISTINCT p FROM Post p
       LEFT JOIN p.tags t
@@ -22,8 +33,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
         AND (:tagSlug IS NULL OR t.slug = :tagSlug)
         AND (
               :search IS NULL
-           OR LOWER(p.title) LIKE LOWER(CONCAT('%', :search, '%'))
-           OR LOWER(p.content) LIKE LOWER(CONCAT('%', :search, '%'))
+           OR LOWER(CAST(p.title AS string)) LIKE LOWER(CONCAT('%', :search, '%'))
+           OR LOWER(CAST(p.content AS string)) LIKE LOWER(CONCAT('%', :search, '%'))
         )
       """)
   Page<Post> search(@Param("status") PostStatus status, @Param("authorId") Long authorId,

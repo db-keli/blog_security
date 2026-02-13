@@ -58,6 +58,7 @@ class BlogGraphQlControllerTest {
                 Instant.now(),
                 Instant.now(),
                 Instant.now(),
+                0L,
                 java.util.Set.of(new TagSummaryDto(1L, "java", "java"))
         );
 

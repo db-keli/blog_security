@@ -55,8 +55,8 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public CommentDto getComment(Long id) {
-        var comment = commentRepository.findById(id)
-                .orElseThrow(() -> new CommentNotFoundException(id));
+        var comment =
+                commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(id));
         return CommentMapper.toDto(comment);
     }
 
@@ -74,8 +74,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentDto updateComment(Long id, UpdateCommentRequest request) {
-        var comment = commentRepository.findById(id)
-                .orElseThrow(() -> new CommentNotFoundException(id));
+        var comment =
+                commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(id));
 
         CommentMapper.updateEntity(comment, request);
         var saved = commentRepository.save(comment);
@@ -84,8 +84,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public void deleteComment(Long id) {
-        var comment = commentRepository.findById(id)
-                .orElseThrow(() -> new CommentNotFoundException(id));
+        var comment =
+                commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException(id));
 
         var postId = comment.getPostId();
 
