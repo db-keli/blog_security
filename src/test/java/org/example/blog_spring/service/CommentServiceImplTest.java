@@ -5,7 +5,7 @@ import static org.mockito.BDDMockito.given;
 
 import java.util.Optional;
 
-import org.example.blog_spring.domain.Comment;
+import org.example.blog_spring.domain.Post;
 import org.example.blog_spring.dto.CreateCommentRequest;
 import org.example.blog_spring.exception.CommentNotFoundException;
 import org.example.blog_spring.exception.PostNotFoundException;
@@ -36,7 +36,7 @@ class CommentServiceImplTest {
 
     @Test
     void createComment_throws_whenPostNotFound() {
-        given(postRepository.existsById(999L)).willReturn(false);
+        given(postRepository.findById(999L)).willReturn(Optional.empty());
         var request = new CreateCommentRequest(999L, 1L, null, "Content");
 
         assertThatThrownBy(() -> commentService.createComment(request))
@@ -45,7 +45,8 @@ class CommentServiceImplTest {
 
     @Test
     void createComment_throws_whenUserNotFound() {
-        given(postRepository.existsById(1L)).willReturn(true);
+        var existingPost = Post.builder().id(1L).build();
+        given(postRepository.findById(1L)).willReturn(Optional.of(existingPost));
         given(userRepository.existsById(999L)).willReturn(false);
         var request = new CreateCommentRequest(1L, 999L, null, "Content");
 
