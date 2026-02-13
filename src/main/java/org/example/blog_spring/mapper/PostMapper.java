@@ -42,6 +42,6 @@ public final class PostMapper {
                         .collect(Collectors.toUnmodifiableSet());
         return new PostDto(post.getId(), post.getAuthorId(), post.getTitle(), post.getContent(),
                 post.getSlug(), post.getStatus(), post.getCreatedAt(), post.getUpdatedAt(),
-                post.getPublishedAt(), tagDtos);
+                post.getPublishedAt(), post.getCommentCount(), tagDtos);
     }
 }

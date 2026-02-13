@@ -1,25 +1,20 @@
 package org.example.blog_spring.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.util.Set;
+
 import org.example.blog_spring.domain.PostStatus;
 
-public record UpdatePostRequest(
-        @NotBlank
-        @Size(max = 255)
-        String title,
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-        @NotBlank
-        String content,
+public record UpdatePostRequest(@NotBlank @Size(max = 255) String title,
 
-        @NotBlank
-        @Size(max = 255)
-        String slug,
+                @NotBlank String content,
 
-        PostStatus status,
+                @NotBlank @Size(max = 255) String slug,
 
-        Set<Long> tagIds
-) {
+                PostStatus status,
+
+                Set<Long> tagIds) {
 }
 

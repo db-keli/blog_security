@@ -16,6 +16,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -63,6 +64,13 @@ public class Post {
 
     @Column(name = "published_at")
     private Instant publishedAt;
+
+    @Column(name = "comment_count", nullable = false)
+    private long commentCount;
+
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"),
