@@ -9,10 +9,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Cache manager using LRU (Least Recently Used) eviction policy.
- * Provides in-memory caching for frequently accessed data.
+ * Legacy custom cache manager using LRU (Least Recently Used) eviction policy.
+ * Kept for diagnostics via CacheController; Spring Cache is used for runtime caching.
  */
-@Component
+@Component("legacyCacheManager")
 public class CacheManager {
 
     // LRU cache for posts - using LinkedHashMap with access order
