@@ -1,6 +1,9 @@
 package org.example.blog_spring.web.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.blog_spring.dto.ApiResponse;
@@ -35,6 +38,25 @@ public class ReviewController {
 
     @PostMapping
     @Operation(summary = "Create a new review")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "201",
+            description = "Review created successfully",
+            content = @Content(schema = @Schema(implementation = ReviewDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or validation failure"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post or user not found"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Review already exists for this user and post"
+        )
+    })
     public ResponseEntity<ApiResponse<ReviewDto>> createReview(
             @Valid @RequestBody CreateReviewRequest request
     ) {
@@ -46,6 +68,17 @@ public class ReviewController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a single review by id")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Review retrieved successfully",
+            content = @Content(schema = @Schema(implementation = ReviewDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Review not found"
+        )
+    })
     public ResponseEntity<ApiResponse<ReviewDto>> getReview(@PathVariable Long id) {
         var reviewDto = reviewService.getReview(id);
         var response =
@@ -55,6 +88,17 @@ public class ReviewController {
 
     @GetMapping("/by-user-and-post")
     @Operation(summary = "Get a review for a given user and post")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Review for user and post retrieved successfully",
+            content = @Content(schema = @Schema(implementation = ReviewDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Review, user, or post not found"
+        )
+    })
     public ResponseEntity<ApiResponse<ReviewDto>> getReviewForUserAndPost(
             @RequestParam("userId") Long userId,
             @RequestParam("postId") Long postId
@@ -70,6 +114,20 @@ public class ReviewController {
 
     @GetMapping("/by-post/{postId}")
     @Operation(summary = "List reviews for a post with pagination")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Reviews for post retrieved successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Page<ReviewDto>>> getReviewsForPost(
             @PathVariable Long postId,
             Pageable pageable
@@ -85,6 +143,20 @@ public class ReviewController {
 
     @GetMapping
     @Operation(summary = "List reviews for a user with pagination")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Reviews for user retrieved successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "User not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Page<ReviewDto>>> getReviewsForUser(
             @RequestParam("userId") Long userId,
             Pageable pageable
@@ -100,6 +172,21 @@ public class ReviewController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing review")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Review updated successfully",
+            content = @Content(schema = @Schema(implementation = ReviewDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or validation failure"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Review not found"
+        )
+    })
     public ResponseEntity<ApiResponse<ReviewDto>> updateReview(
             @PathVariable Long id,
             @Valid @RequestBody UpdateReviewRequest request
@@ -112,6 +199,16 @@ public class ReviewController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a review")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "204",
+            description = "Review deleted successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Review not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Void>> deleteReview(@PathVariable Long id) {
         reviewService.deleteReview(id);
         var response = ApiResponse.<Void>success(

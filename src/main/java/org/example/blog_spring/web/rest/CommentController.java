@@ -1,6 +1,9 @@
 package org.example.blog_spring.web.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.blog_spring.dto.ApiResponse;
@@ -35,6 +38,21 @@ public class CommentController {
 
     @PostMapping
     @Operation(summary = "Create a new comment")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "201",
+            description = "Comment created successfully",
+            content = @Content(schema = @Schema(implementation = CommentDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or validation failure"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post or user not found"
+        )
+    })
     public ResponseEntity<ApiResponse<CommentDto>> createComment(
             @Valid @RequestBody CreateCommentRequest request
     ) {
@@ -46,6 +64,17 @@ public class CommentController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a single comment by id")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Comment retrieved successfully",
+            content = @Content(schema = @Schema(implementation = CommentDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Comment not found"
+        )
+    })
     public ResponseEntity<ApiResponse<CommentDto>> getComment(@PathVariable Long id) {
         var commentDto = commentService.getComment(id);
         var response =
@@ -55,6 +84,20 @@ public class CommentController {
 
     @GetMapping("/by-post/{postId}")
     @Operation(summary = "List comments for a post with pagination")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Comments for post retrieved successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Page<CommentDto>>> getCommentsForPost(
             @PathVariable Long postId,
             Pageable pageable
@@ -70,6 +113,20 @@ public class CommentController {
 
     @GetMapping
     @Operation(summary = "List comments for a user with pagination")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Comments for user retrieved successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "User not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Page<CommentDto>>> getCommentsForUser(
             @RequestParam("userId") Long userId,
             Pageable pageable
@@ -85,6 +142,21 @@ public class CommentController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing comment")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Comment updated successfully",
+            content = @Content(schema = @Schema(implementation = CommentDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or validation failure"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Comment not found"
+        )
+    })
     public ResponseEntity<ApiResponse<CommentDto>> updateComment(
             @PathVariable Long id,
             @Valid @RequestBody UpdateCommentRequest request
@@ -97,6 +169,16 @@ public class CommentController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a comment")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "204",
+            description = "Comment deleted successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Comment not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Void>> deleteComment(@PathVariable Long id) {
         commentService.deleteComment(id);
         var response = ApiResponse.<Void>success(

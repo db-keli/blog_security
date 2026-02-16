@@ -1,6 +1,9 @@
 package org.example.blog_spring.web.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.blog_spring.dto.ApiResponse;
@@ -35,6 +38,21 @@ public class PostController {
 
     @PostMapping
     @Operation(summary = "Create a new post")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "201",
+            description = "Post created successfully",
+            content = @Content(schema = @Schema(implementation = PostDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input, validation failure, or author not found"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Post with the same slug already exists"
+        )
+    })
     public ResponseEntity<ApiResponse<PostDto>> createPost(
             @Valid @RequestBody CreatePostRequest request
     ) {
@@ -46,6 +64,17 @@ public class PostController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a single post by id")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Post retrieved successfully",
+            content = @Content(schema = @Schema(implementation = PostDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post not found"
+        )
+    })
     public ResponseEntity<ApiResponse<PostDto>> getPost(@PathVariable Long id) {
         var postDto = postService.getPost(id);
         var response = ApiResponse.success(HttpStatus.OK, "Post retrieved successfully", postDto);
@@ -54,6 +83,17 @@ public class PostController {
 
     @GetMapping("/slug/{slug}")
     @Operation(summary = "Get a single post by slug")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Post retrieved successfully",
+            content = @Content(schema = @Schema(implementation = PostDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post not found"
+        )
+    })
     public ResponseEntity<ApiResponse<PostDto>> getPostBySlug(@PathVariable String slug) {
         var postDto = postService.getPostBySlug(slug);
         var response =
@@ -62,7 +102,17 @@ public class PostController {
     }
 
     @GetMapping
-    @Operation(summary = "List posts with pagination")
+    @Operation(summary = "List posts with pagination and optional filters")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Posts retrieved successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination or filter parameters"
+        )
+    })
     public ResponseEntity<ApiResponse<Page<PostDto>>> getPosts(
             @RequestParam(name = "authorId", required = false) Long authorId,
             @RequestParam(name = "tag", required = false) String tagSlug,
@@ -79,6 +129,25 @@ public class PostController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing post")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Post updated successfully",
+            content = @Content(schema = @Schema(implementation = PostDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or validation failure"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post not found"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Post with the same slug already exists"
+        )
+    })
     public ResponseEntity<ApiResponse<PostDto>> updatePost(
             @PathVariable Long id,
             @Valid @RequestBody UpdatePostRequest request
@@ -91,6 +160,16 @@ public class PostController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a post")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "204",
+            description = "Post deleted successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Post not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Void>> deletePost(@PathVariable Long id) {
         postService.deletePost(id);
         var response =

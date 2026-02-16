@@ -70,3 +70,4 @@ Reports are written to `metrics/`.
 
 - [docs/REPOSITORY.md](docs/REPOSITORY.md) – repository structure and query logic
 - [docs/TRANSACTIONS.md](docs/TRANSACTIONS.md) – transaction handling
+- [docs/OPENAPI.md](docs/OPENAPI.md) – comprehensive OpenAPI/Swagger documentation

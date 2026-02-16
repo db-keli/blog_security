@@ -1,6 +1,9 @@
 package org.example.blog_spring.web.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.blog_spring.dto.ApiResponse;
@@ -34,6 +37,21 @@ public class TagController {
 
     @PostMapping
     @Operation(summary = "Create a new tag")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "201",
+            description = "Tag created successfully",
+            content = @Content(schema = @Schema(implementation = TagDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or validation failure"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Tag with the same name or slug already exists"
+        )
+    })
     public ResponseEntity<ApiResponse<TagDto>> createTag(
             @Valid @RequestBody CreateTagRequest request
     ) {
@@ -44,6 +62,17 @@ public class TagController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get a single tag by id")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Tag retrieved successfully",
+            content = @Content(schema = @Schema(implementation = TagDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Tag not found"
+        )
+    })
     public ResponseEntity<ApiResponse<TagDto>> getTag(@PathVariable Long id) {
         var tagDto = tagService.getTag(id);
         var response = ApiResponse.success(HttpStatus.OK, "Tag retrieved successfully", tagDto);
@@ -52,6 +81,17 @@ public class TagController {
 
     @GetMapping("/slug/{slug}")
     @Operation(summary = "Get a single tag by slug")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Tag retrieved successfully",
+            content = @Content(schema = @Schema(implementation = TagDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Tag not found"
+        )
+    })
     public ResponseEntity<ApiResponse<TagDto>> getTagBySlug(@PathVariable String slug) {
         var tagDto = tagService.getTagBySlug(slug);
         var response =
@@ -61,6 +101,16 @@ public class TagController {
 
     @GetMapping
     @Operation(summary = "List tags with pagination")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Tags retrieved successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid pagination parameters"
+        )
+    })
     public ResponseEntity<ApiResponse<Page<TagDto>>> getTags(Pageable pageable) {
         var tags = tagService.getTags(pageable);
         var response = ApiResponse.success(HttpStatus.OK, "Tags retrieved successfully", tags);
@@ -69,6 +119,25 @@ public class TagController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update an existing tag")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Tag updated successfully",
+            content = @Content(schema = @Schema(implementation = TagDto.class))
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or validation failure"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Tag not found"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Tag with the same name or slug already exists"
+        )
+    })
     public ResponseEntity<ApiResponse<TagDto>> updateTag(
             @PathVariable Long id,
             @Valid @RequestBody UpdateTagRequest request
@@ -80,6 +149,16 @@ public class TagController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a tag")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "204",
+            description = "Tag deleted successfully"
+        ),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Tag not found"
+        )
+    })
     public ResponseEntity<ApiResponse<Void>> deleteTag(@PathVariable Long id) {
         tagService.deleteTag(id);
         var response =
