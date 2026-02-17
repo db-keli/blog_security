@@ -1,0 +1,34 @@
+Benchmark label : optimized-cache
+Base URL        : http://localhost:8080
+Iterations/ep   : 50
+Started at      : 2026-02-17T09:51:07+00:00
+
+Running benchmark: REST: list posts (published, page 0 size 10) (GET /api/posts?page=0&size=10&publishedOnly=true)
+  Total time : 1000 ms for 50 requests
+  Avg/req    : 20 ms
+
+Running benchmark: REST: list posts (search=GraphQL) (GET /api/posts?page=0&size=10&search=GraphQL&publishedOnly=true)
+  Total time : 1000 ms for 50 requests
+  Avg/req    : 20 ms
+
+Running benchmark: REST: get post by id (1) (GET /api/posts/1)
+  Total time : 1000 ms for 50 requests
+  Avg/req    : 20 ms
+
+Running benchmark: REST: get post by slug (getting-started-with-spring-boot) (GET /api/posts/slug/getting-started-with-spring-boot)
+  Total time : 1000 ms for 50 requests
+  Avg/req    : 20 ms
+
+Running benchmark: REST: list tags (page 0 size 10) (GET /api/tags?page=0&size=10)
+  Total time : 2000 ms for 50 requests
+  Avg/req    : 40 ms
+
+Running benchmark: REST: list users (page 0 size 10) (GET /api/users?page=0&size=10)
+  Total time : 1000 ms for 50 requests
+  Avg/req    : 20 ms
+
+Running benchmark: GraphQL: posts list (publishedOnly) (POST /graphql)
+  Total time : 1000 ms for 50 requests
+  Avg/req    : 20 ms
+
+Finished at      : 2026-02-17T09:51:15+00:00
