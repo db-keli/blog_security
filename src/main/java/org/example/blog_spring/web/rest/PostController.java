@@ -15,6 +15,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,6 +54,7 @@ public class PostController {
             description = "Post with the same slug already exists"
         )
     })
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR')")
     public ResponseEntity<ApiResponse<PostDto>> createPost(
             @Valid @RequestBody CreatePostRequest request
     ) {
@@ -148,6 +150,7 @@ public class PostController {
             description = "Post with the same slug already exists"
         )
     })
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR')")
     public ResponseEntity<ApiResponse<PostDto>> updatePost(
             @PathVariable Long id,
             @Valid @RequestBody UpdatePostRequest request
@@ -170,6 +173,7 @@ public class PostController {
             description = "Post not found"
         )
     })
+    @PreAuthorize("hasAnyRole('ADMIN','AUTHOR')")
     public ResponseEntity<ApiResponse<Void>> deletePost(@PathVariable Long id) {
         postService.deletePost(id);
         var response =

@@ -3,12 +3,15 @@ package org.example.blog_spring.domain;
 import java.time.Instant;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,6 +43,11 @@ public class User {
 
     @Column(columnDefinition = "TEXT")
     private String bio;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    @Default
+    private UserRole role = UserRole.READER;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;

@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL DEFAULT '',
     display_name VARCHAR(100),
     bio TEXT,
+    role VARCHAR(20) NOT NULL DEFAULT 'READER',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

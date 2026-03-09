@@ -9,6 +9,7 @@ import org.example.blog_spring.domain.PostStatus;
 import org.example.blog_spring.domain.Review;
 import org.example.blog_spring.domain.Tag;
 import org.example.blog_spring.domain.User;
+import org.example.blog_spring.domain.UserRole;
 import org.example.blog_spring.repository.CommentRepository;
 import org.example.blog_spring.repository.PostRepository;
 import org.example.blog_spring.repository.ReviewRepository;
@@ -59,14 +60,17 @@ public class DatabaseSeeder implements CommandLineRunner {
 
                 var jdoe = new User("jdoe", "jdoe@example.com", "John Doe");
                 jdoe.setBio("Senior Java developer who writes about Spring and backend architecture.");
+                jdoe.setRole(UserRole.AUTHOR);
                 jdoe = userRepository.save(jdoe);
 
                 var asmith = new User("asmith", "asmith@example.com", "Alice Smith");
                 asmith.setBio("Full-stack engineer who enjoys GraphQL and modern frontend stacks.");
+                asmith.setRole(UserRole.READER);
                 asmith = userRepository.save(asmith);
 
                 var bwayne = new User("bwayne", "bwayne@example.com", "Bruce Wayne");
                 bwayne.setBio("Security-focused architect writing about performance and hardening.");
+                bwayne.setRole(UserRole.ADMIN);
                 bwayne = userRepository.save(bwayne);
 
                 var tagSpring = new Tag("Spring Boot", "spring-boot");

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.example.blog_spring.dto.ApiResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,7 @@ import jakarta.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleUserNotFound(UserNotFoundException ex) {
         var response = ApiResponse.<Void>error(HttpStatus.NOT_FOUND, ex.getMessage(), null);
@@ -65,6 +68,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidCredentials(
+            InvalidCredentialsException ex) {
+        var response = ApiResponse.<Void>error(HttpStatus.UNAUTHORIZED, ex.getMessage(), null);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
     @ExceptionHandler(InvalidDataAccessApiUsageException.class)
     public ResponseEntity<ApiResponse<Void>> handleInvalidDataAccess(
             InvalidDataAccessApiUsageException ex) {
@@ -75,6 +85,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnexpected(Exception ex) {
+        if (ex instanceof org.springframework.web.servlet.resource.NoResourceFoundException) {
+            var notFound = ApiResponse.<Void>error(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(notFound);
+        }
+        log.error("Unhandled exception", ex);
         var response = ApiResponse.<Void>error(HttpStatus.INTERNAL_SERVER_ERROR,
                 "Unexpected error occurred", null);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);

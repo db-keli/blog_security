@@ -29,9 +29,11 @@ class PostRepositoryTest extends AbstractRepositoryTest {
 
     private Long ensureAuthor() {
         var id = unique();
-        return userRepository.save(org.example.blog_spring.domain.User.builder()
-                .username("author-" + id).email("author-" + id + "@example.com").displayName("Author")
-                .passwordHash("").createdAt(Instant.now()).updatedAt(Instant.now()).build()).getId();
+        return userRepository
+                .save(org.example.blog_spring.domain.User.builder().username("author-" + id)
+                        .email("author-" + id + "@example.com").displayName("Author")
+                        .passwordHash("").createdAt(Instant.now()).updatedAt(Instant.now()).build())
+                .getId();
     }
 
     private Tag ensureTag(String name, String slug) {
@@ -42,8 +44,8 @@ class PostRepositoryTest extends AbstractRepositoryTest {
 
     private Post buildPost(Long authorId, String title, String slug, PostStatus status) {
         var now = Instant.now();
-        return Post.builder().authorId(authorId).title(title).content("content").slug(slug + "-" + unique())
-                .status(status).createdAt(now).updatedAt(now).build();
+        return Post.builder().authorId(authorId).title(title).content("content")
+                .slug(slug + "-" + unique()).status(status).createdAt(now).updatedAt(now).build();
     }
 
     @Test
@@ -62,11 +64,16 @@ class PostRepositoryTest extends AbstractRepositoryTest {
         var authorId = ensureAuthor();
         var id = unique();
         postRepository.save(buildPost(authorId, "Draft", "draft-" + id, PostStatus.DRAFT));
-        postRepository.save(buildPost(authorId, "Published", "pub-" + id, PostStatus.PUBLISHED));
+        var publishedPost = postRepository
+                .save(buildPost(authorId, "Published", "pub-" + id, PostStatus.PUBLISHED));
 
         var page = postRepository.findByStatus(PostStatus.PUBLISHED, PageRequest.of(0, 10));
-        assertThat(page.getContent()).hasSize(1);
-        assertThat(page.getContent().getFirst().getStatus()).isEqualTo(PostStatus.PUBLISHED);
+        var matching = page.getContent().stream().filter(p -> p.getSlug().startsWith("pub-" + id))
+                .toList();
+
+        assertThat(matching).hasSize(1);
+        assertThat(matching.getFirst().getId()).isEqualTo(publishedPost.getId());
+        assertThat(matching.getFirst().getStatus()).isEqualTo(PostStatus.PUBLISHED);
     }
 
     @Test
@@ -75,7 +82,8 @@ class PostRepositoryTest extends AbstractRepositoryTest {
         var id = unique();
         var authorId2 = userRepository.save(org.example.blog_spring.domain.User.builder()
                 .username("other-" + id).email("other-" + id + "@example.com").displayName("Other")
-                .passwordHash("").createdAt(Instant.now()).updatedAt(Instant.now()).build()).getId();
+                .passwordHash("").createdAt(Instant.now()).updatedAt(Instant.now()).build())
+                .getId();
 
         postRepository.save(buildPost(authorId1, "A1 Post1", "a1-p1-" + id, PostStatus.DRAFT));
         postRepository.save(buildPost(authorId2, "A2 Post1", "a2-p1-" + id, PostStatus.DRAFT));

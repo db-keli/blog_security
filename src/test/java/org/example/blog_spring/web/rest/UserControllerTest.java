@@ -1,14 +1,14 @@
 package org.example.blog_spring.web.rest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.BDDMockito.given;
-
 import java.time.Instant;
 import java.util.List;
+
 import org.example.blog_spring.dto.ApiResponse;
 import org.example.blog_spring.dto.UserDto;
 import org.example.blog_spring.service.UserService;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
+import static org.mockito.BDDMockito.given;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -23,17 +23,10 @@ class UserControllerTest {
 
     @Test
     void getUsers_returnsPagedUsersWrappedInApiResponse() {
-        var user = new UserDto(
-                1L,
-                "jdoe",
-                "jdoe@example.com",
-                "John Doe",
-                Instant.now(),
-                Instant.now()
-        );
+        var user = new UserDto(1L, "jdoe", "jdoe@example.com", "John Doe", Instant.now(),
+                Instant.now());
 
-        Page<UserDto> page =
-                new PageImpl<>(List.of(user), PageRequest.of(0, 20), 1);
+        Page<UserDto> page = new PageImpl<>(List.of(user), PageRequest.of(0, 20), 1);
 
         given(userService.getUsers(Mockito.any(Pageable.class))).willReturn(page);
 
